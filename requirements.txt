@@ -3,6 +3,7 @@ pandas
 openpyxl
 
 # Development dependencies (linting and formatting)
+
 black
 flake8
 mypy
@@ -10,3 +11,5 @@ pre-commit
 isort
 pytest
 pytest-cov
+setuptools>=78.1.1
+gitpython>=3.1.41
