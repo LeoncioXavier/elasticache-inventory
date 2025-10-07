@@ -68,5 +68,5 @@ def save_scan_state(state_file: str, state: Dict[str, Any]) -> None:
     try:
         with open(state_file, "w") as f:
             json.dump(state, f, indent=2, default=str)
-    except Exception:
-        pass  # Don't fail the scan if we can't save state
+    except Exception as e:
+        print(f"Warning: Failed to save scan state to {state_file}: {e}")
