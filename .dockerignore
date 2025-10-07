@@ -1,0 +1,51 @@
+# Docker ignore file for ElastiCache Inventory
+
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+.pytest_cache
+
+# Virtual environments
+venv/
+env/
+
+# Generated output files
+elasticache_report.csv
+elasticache_report.html
+elasticache_report.xlsx
+scan_errors.log
+scan_failures.json
+scan_state.json
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Documentation
+README-pt.md
+CONTRIBUTING.md
+CHANGELOG.md
+CONTRIBUTORS.md
+SECURITY.md
+
+# Development files
+.pre-commit-config.yaml
+.flake8
+Makefile
+tests/
+
+# GitHub
+.github/

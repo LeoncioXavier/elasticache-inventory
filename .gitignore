@@ -1,0 +1,55 @@
+# Python
+venv/
+__pycache__/
+.elasticache_scanner
+*.pyc
+*.pyo
+*.pyd
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Generated output files
+elasticache_report.csv
+elasticache_report.html
+elasticache_report.xlsx
+scan_errors.log
+scan_failures.json
+scan_state.json
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Testing
+.coverage
+.pytest_cache/
+htmlcov/
+.tox/
+.nox/
+
+# Documentation
+docs/_build/
+
+# Environment variables
+.env
+.env.local

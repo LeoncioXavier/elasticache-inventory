@@ -1,0 +1,10 @@
+boto3
+pandas
+openpyxl
+
+# Development dependencies (linting and formatting)
+black
+flake8
+mypy
+pre-commit
+isort
