@@ -32,6 +32,7 @@ dev = [
     "pre-commit",
     "isort",
     "pytest",
+    "pytest-cov",
 ]
 
 [project.scripts]
