@@ -1,17 +1,18 @@
 """Tests for elasticache_scanner.aws_utils module."""
 
-import pytest
 from unittest.mock import MagicMock, patch
+
+import pytest
 from botocore.exceptions import ClientError
 
 from elasticache_scanner.aws_utils import (
-    get_available_profiles,
-    list_tags_for_resource,
+    calculate_resource_hash,
     describe_cache_cluster,
     format_creation_time_from_cluster,
-    try_construct_arn,
-    calculate_resource_hash,
+    get_available_profiles,
     is_invalid_client_token,
+    list_tags_for_resource,
+    try_construct_arn,
 )
 
 
