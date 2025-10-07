@@ -1,15 +1,7 @@
-import builtins
-import json
-import os
-import sys
-from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 import pytest
 from botocore.exceptions import ClientError
-
-# Ensure project root is importable
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from elasticache_scanner.config import ScanConfig
 from elasticache_scanner.scanner import scan_profile
@@ -128,7 +120,6 @@ def test_include_rgs_with_node_info(monkeypatch):
     config = ScanConfig(regions=["us-east-1"], tags=["Team"], include_replication_groups=True, node_info=True)
 
     # We need describe_cache_cluster to return the cache cluster when called with CacheClusterId
-    orig_describe = sess.client("elasticache").describe_cache_clusters
 
     def describe_cache_clusters_side_effect(*args, **kwargs):
         return {"CacheClusters": clusters}
