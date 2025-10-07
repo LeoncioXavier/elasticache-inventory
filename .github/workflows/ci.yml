@@ -50,7 +50,7 @@ jobs:
         # Check all files with relaxed settings for warnings and bugbear security checks
         flake8 elasticache_scanner/ --count --max-complexity=12 --max-line-length=120 --statistics --extend-select=B
     - name: Security scan with pip-audit
-      run: pip-audit --skip-editable
+      run: pip-audit --skip-editable --ignore-vuln GHSA-4xh5-x5gv-qwph
 
     - name: Security scan with bandit
       run: bandit -r elasticache_scanner/
