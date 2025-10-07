@@ -39,10 +39,9 @@ jobs:
         pip install -e .
         pip install pip-audit bandit flake8-bugbear
 
-    - name: Upgrade pip and gitpython
+    - name: Force upgrade vulnerable packages
       run: |
-        pip install --upgrade pip
-        pip install --upgrade gitpython
+        pip install --upgrade --force-reinstall pip gitpython setuptools urllib3
     - name: Install truffleHog
       run: |
         pip install trufflehog
