@@ -1,4 +1,4 @@
-boto3>=1.28.20
+boto3>=1.34.88
 pandas
 openpyxl
 
@@ -13,4 +13,4 @@ pytest
 pytest-cov
 setuptools>=75.3.2
 gitpython>=3.1.41
-urllib3>=2.0.0
+urllib3>=2.0.7
