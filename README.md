@@ -1,8 +1,4 @@
-# ElastiCache Inventory
-
-**📄 [Versão em Português](README-pt.md)** | **📄 English Version**
-
-A modular Python tool for inventorying ElastiCache Redis resources across AWS profiles and regions with parallel scanning, incremental updates, and comprehensive reporting.stiCache Scanner
+# ElastiCache Inventor
 
 **📄 [Versão em Português](README-pt.md)** | **📄 English Version**
 
