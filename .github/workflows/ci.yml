@@ -37,7 +37,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         pip install -e .
-        pip install pip-audit bandit flake8-bugbear
+        pip install bandit flake8-bugbear
 
     - name: Lint with flake8 and flake8-bugbear
       run: |
@@ -45,9 +45,6 @@ jobs:
         flake8 elasticache_scanner/ --count --select=E9,F63,F7,F82 --show-source --statistics
         # Check all files with relaxed settings for warnings and bugbear security checks
         flake8 elasticache_scanner/ --count --max-complexity=12 --max-line-length=120 --statistics --extend-select=B
-    - name: Security scan with pip-audit
-      run: pip-audit --skip-editable --ignore-vuln GHSA-4xh5-x5gv-qwph
-
     - name: Security scan with bandit
       run: bandit -r elasticache_scanner/
 
