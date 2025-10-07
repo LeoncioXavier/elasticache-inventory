@@ -201,6 +201,19 @@ make dry-run      # Test UI changes without AWS calls
 ### Available make targets
 Run `make help` to see all available targets including examples for different scanning modes.
 
+## Security Checks in CI
+
+The CI pipeline automatically runs several security checks to help keep your codebase and dependencies safe:
+
+- **pip-audit**: Scans Python dependencies for known vulnerabilities and suggests secure versions.
+- **bandit**: Analyzes Python code for common security issues (e.g., weak cryptography, unsafe exception handling).
+- **truffleHog**: Scans the git history for secrets and credentials accidentally committed to the repository.
+- **flake8-bugbear**: Adds extra linting for likely bugs and security issues in Python code.
+
+These checks run on every push and pull request. If any vulnerabilities or issues are found, the CI will fail and provide details for remediation.
+
+---
+
 ## Changelog
 
 ### v1.0.0 (2025-10-06)

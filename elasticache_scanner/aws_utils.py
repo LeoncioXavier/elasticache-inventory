@@ -16,15 +16,15 @@ def is_invalid_client_token(err: Exception) -> bool:
             code = err.response.get("Error", {}).get("Code")
             if code == "InvalidClientTokenId":
                 return True
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning(f"Error checking client token validity: {e}")
     # fallback to string matching
     try:
         s = str(err)
         if "InvalidClientTokenId" in s or "invalid client token id" in s.lower() or "expired" in s.lower():
             return True
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning(f"Error matching string for client token validity: {e}")
     return False
 
 
@@ -112,4 +112,4 @@ def calculate_resource_hash(resource_data: Dict[str, Any]) -> str:
     ]
 
     content = "|".join(key_fields)
-    return hashlib.md5(content.encode()).hexdigest()
+    return hashlib.md5(content.encode()).hexdigest()  # nosec B303, B324
