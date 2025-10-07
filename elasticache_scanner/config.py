@@ -3,7 +3,7 @@
 import json
 import os
 from dataclasses import dataclass, field
-from typing import Any, Dict, List
+from typing import Any, Dict, List, cast
 
 
 @dataclass
@@ -57,7 +57,8 @@ def load_scan_state(state_file: str) -> Dict[str, Any]:
 
     try:
         with open(state_file, "r") as f:
-            return json.load(f)
+            data = json.load(f)
+            return cast(Dict[str, Any], data)
     except Exception:
         return {}
 

@@ -8,7 +8,7 @@ import os
 import sys
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
-from typing import Any, Dict, List
+from typing import Any, Dict, List, cast
 
 import pandas as pd
 
@@ -97,25 +97,25 @@ def save_new_scan_state(config: ScanConfig, all_rows: List[Dict[str, Any]]) -> N
 
     # Group resources by profile and region
     for row in all_rows:
-        profile = row.get("Profile")
-        region = row.get("Region")
-        resource_id = row.get("ResourceId")
+        profile_name = cast(str, row.get("Profile", ""))
+        region_name = cast(str, row.get("Region", ""))
+        resource_id = cast(str, row.get("ResourceId", ""))
 
-        if not all([profile, region, resource_id]):
+        if not all([profile_name, region_name, resource_id]):
             continue
 
-        if profile not in new_state["profiles"]:
-            new_state["profiles"][profile] = {"regions": {}}
+        if profile_name not in new_state["profiles"]:
+            new_state["profiles"][profile_name] = {"regions": {}}  # type: ignore[index]
 
-        if region not in new_state["profiles"][profile]["regions"]:
-            new_state["profiles"][profile]["regions"][region] = {}
+        if region_name not in new_state["profiles"][profile_name]["regions"]:  # type: ignore[index]
+            new_state["profiles"][profile_name]["regions"][region_name] = {}  # type: ignore[index]
 
         # Calculate hash for change detection
         from elasticache_scanner.aws_utils import calculate_resource_hash
 
         resource_hash = calculate_resource_hash(row)
 
-        new_state["profiles"][profile]["regions"][region][resource_id] = {
+        new_state["profiles"][profile_name]["regions"][region_name][resource_id] = {  # type: ignore[index]
             "hash": resource_hash,
             "last_seen": datetime.now(timezone.utc).isoformat(),
         }
@@ -189,7 +189,7 @@ def create_argument_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def build_config_from_args(args) -> ScanConfig:
+def build_config_from_args(args: Any) -> ScanConfig:
     """Build ScanConfig from parsed arguments."""
     config = ScanConfig(
         regions=args.regions,
@@ -212,25 +212,31 @@ def build_config_from_args(args) -> ScanConfig:
     return config
 
 
-def determine_profiles(args) -> List[str]:
+def determine_profiles(args: Any) -> List[str]:
     """Determine which profiles to scan based on arguments."""
     if args.profile:
-        profiles = []
-        for p in args.profile:
+        profiles: List[str] = []
+        profile_args = cast(List[str], args.profile)
+        for p in profile_args:
             for part in p.split(","):
                 part = part.strip()
                 if part:
                     profiles.append(part)
         # dedupe while preserving order
-        seen = set()
-        profiles = [x for x in profiles if not (x in seen or seen.add(x))]
+        seen: set[str] = set()
+        unique_profiles = []
+        for x in profiles:
+            if x not in seen:
+                seen.add(x)
+                unique_profiles.append(x)
+        profiles = unique_profiles
     else:
         profiles = get_available_profiles()
 
     return profiles
 
 
-def handle_dry_run(args, config: ScanConfig) -> List[Dict[str, Any]]:
+def handle_dry_run(args: Any, config: ScanConfig) -> List[Dict[str, Any]]:
     """Handle dry run mode by loading sample data."""
     sample_path = args.sample_file or config.output_paths["csv"]
     if not os.path.exists(sample_path):
@@ -238,7 +244,7 @@ def handle_dry_run(args, config: ScanConfig) -> List[Dict[str, Any]]:
         sys.exit(1)
 
     df = pd.read_csv(sample_path)
-    all_rows = df.to_dict(orient="records")
+    all_rows = cast(List[Dict[str, Any]], df.to_dict(orient="records"))
     logger.info(f"Loaded {len(all_rows)} rows from {sample_path} for dry-run")
     return all_rows
 
@@ -305,7 +311,7 @@ def main() -> None:
     # Get data - either from dry run or actual scan
     if args.dry_run:
         all_rows = handle_dry_run(args, config)
-        failures = {}
+        failures: Dict[str, str] = {}
     else:
         all_rows, failures = scan_profiles_parallel(profiles, config)
 

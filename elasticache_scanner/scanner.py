@@ -1,7 +1,7 @@
 """Core scanning logic for ElastiCache resources."""
 
 import logging
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import boto3
 
@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 
 def scan_profile(
-    profile: str, config: ScanConfig, previous_state: Dict[str, Any] = None
+    profile: str, config: ScanConfig, previous_state: Optional[Dict[str, Any]] = None
 ) -> Tuple[List[Dict[str, Any]], str]:
     """
     Scan a single AWS profile for ElastiCache resources.
@@ -122,7 +122,7 @@ def _build_replication_group_row(
     account_id: str,
     region: str,
     config: ScanConfig,
-    client,
+    client: Any,
     session: boto3.session.Session,
 ) -> Dict[str, Any]:
     """Build a row dictionary for a replication group."""
@@ -175,7 +175,7 @@ def _build_replication_group_row(
 
 
 def _scan_replication_groups(
-    client,
+    client: Any,
     session: boto3.session.Session,
     profile: str,
     account_id: str,
@@ -184,7 +184,7 @@ def _scan_replication_groups(
     previous_state: Dict[str, Any],
 ) -> List[Dict[str, Any]]:
     """Scan replication groups in a region."""
-    rows = []
+    rows: List[Dict[str, Any]] = []
 
     try:
         resp = client.describe_replication_groups()
@@ -240,7 +240,7 @@ def _build_cache_cluster_row(
     account_id: str,
     region: str,
     config: ScanConfig,
-    client,
+    client: Any,
 ) -> Dict[str, Any]:
     """Build a row dictionary for a cache cluster."""
     cc_id = cc.get("CacheClusterId")
@@ -288,7 +288,7 @@ def _build_cache_cluster_row(
 
 
 def _scan_cache_clusters(
-    client,
+    client: Any,
     session: boto3.session.Session,
     profile: str,
     account_id: str,
@@ -297,7 +297,7 @@ def _scan_cache_clusters(
     previous_state: Dict[str, Any],
 ) -> List[Dict[str, Any]]:
     """Scan cache clusters in a region."""
-    rows = []
+    rows: List[Dict[str, Any]] = []
 
     try:
         # If node_info is False, avoid fetching per-node details to speed up the call
@@ -347,6 +347,6 @@ def _resource_unchanged(
 
     # Calculate current resource hash
     current_hash = calculate_resource_hash(resource_data)
-    previous_hash = resource_state.get("hash", "")
+    previous_hash = str(resource_state.get("hash", ""))
 
-    return current_hash == previous_hash
+    return bool(current_hash == previous_hash)

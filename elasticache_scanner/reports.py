@@ -6,10 +6,12 @@ from typing import List
 
 import pandas as pd
 
+from elasticache_scanner.config import ScanConfig
+
 logger = logging.getLogger(__name__)
 
 
-def generate_html_report(df: pd.DataFrame, profiles: List[str], html_path: str, config) -> None:
+def generate_html_report(df: pd.DataFrame, profiles: List[str], html_path: str, config: ScanConfig) -> None:
     """Generate interactive HTML report with DataTables, charts and filters."""
     # Use DataTables + Bootstrap for sorting and per-column filters
     # Remove unwanted columns from the table view
