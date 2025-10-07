@@ -34,13 +34,25 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         pip install -e .
+        pip install pip-audit bandit flake8-bugbear
+    - name: Install truffleHog
+      run: |
+        pip install trufflehog
 
-    - name: Lint with flake8
+    - name: Lint with flake8 and flake8-bugbear
       run: |
         # Stop the build if there are Python syntax errors or undefined names
         flake8 elasticache_scanner/ --count --select=E9,F63,F7,F82 --show-source --statistics
-        # Check all files with relaxed settings for warnings
-        flake8 elasticache_scanner/ --count --max-complexity=12 --max-line-length=120 --statistics
+        # Check all files with relaxed settings for warnings and bugbear security checks
+        flake8 elasticache_scanner/ --count --max-complexity=12 --max-line-length=120 --statistics --extend-select=B
+    - name: Security scan with pip-audit
+      run: pip-audit
+
+    - name: Security scan with bandit
+      run: bandit -r elasticache_scanner/
+
+    - name: Secret scan with truffleHog
+      run: trufflehog filesystem .
 
     - name: Type check with mypy
       run: |
