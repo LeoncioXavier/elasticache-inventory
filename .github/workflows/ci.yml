@@ -42,9 +42,6 @@ jobs:
     - name: Force upgrade vulnerable packages
       run: |
         pip install --upgrade --force-reinstall pip gitpython setuptools urllib3
-    - name: Install truffleHog
-      run: |
-        pip install trufflehog
 
     - name: Lint with flake8 and flake8-bugbear
       run: |
@@ -59,7 +56,12 @@ jobs:
       run: bandit -r elasticache_scanner/
 
     - name: Secret scan with truffleHog
-      run: trufflehog filesystem .
+      uses: trufflesecurity/trufflehog@main
+      with:
+        path: ./
+        base: ${{ github.event.before }}
+        head: ${{ github.sha }}
+        extra_args: --only-verified
 
     - name: Type check with mypy
       run: |
