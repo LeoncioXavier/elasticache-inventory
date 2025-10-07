@@ -2,8 +2,6 @@
 * @LeoncioXavier
 
 # Documentation
-*.md @LeoncioXavier
-docs/ @LeoncioXavier
 
 # Configuration and CI/CD
 .github/ @LeoncioXavier
