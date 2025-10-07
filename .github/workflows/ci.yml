@@ -29,12 +29,20 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-pip-
 
+    - name: Clear pip cache
+      run: pip cache purge
+
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         pip install -e .
         pip install pip-audit bandit flake8-bugbear
+
+    - name: Upgrade pip and gitpython
+      run: |
+        pip install --upgrade pip
+        pip install --upgrade gitpython
     - name: Install truffleHog
       run: |
         pip install trufflehog
