@@ -124,8 +124,8 @@ def save_new_scan_state(config: ScanConfig, all_rows: List[Dict[str, Any]]) -> N
     logger.info(f"Saved scan state to {config.output_paths['state']}")
 
 
-def main() -> None:
-    """Main CLI entry point."""
+def create_argument_parser() -> argparse.ArgumentParser:
+    """Create and configure the argument parser."""
     parser = argparse.ArgumentParser(
         description="Inventory ElastiCache resources across AWS profiles and regions",
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -148,9 +148,7 @@ def main() -> None:
     parser.add_argument("--regions", nargs="+", required=True, help="AWS regions to scan (e.g., us-east-1 sa-east-1)")
 
     # Optional configuration
-    parser.add_argument(
-        "--tags", nargs="+", default=["Team"], help="Tags to collect from resources (default: Team)"
-    )
+    parser.add_argument("--tags", nargs="+", default=["Team"], help="Tags to collect from resources (default: Team)")
 
     parser.add_argument(
         "--profile",
@@ -188,9 +186,11 @@ def main() -> None:
     parser.add_argument("--dry-run", action="store_true", help="Generate reports from existing CSV without AWS calls")
     parser.add_argument("--sample-file", help="CSV file to use for dry run (default: elasticache_report.csv)")
 
-    args = parser.parse_args()
+    return parser
 
-    # Build configuration
+
+def build_config_from_args(args) -> ScanConfig:
+    """Build ScanConfig from parsed arguments."""
     config = ScanConfig(
         regions=args.regions,
         tags=args.tags,
@@ -208,6 +208,78 @@ def main() -> None:
         config.output_xlsx = args.out_xlsx
     if args.out_html:
         config.output_html = args.out_html
+
+    return config
+
+
+def determine_profiles(args) -> List[str]:
+    """Determine which profiles to scan based on arguments."""
+    if args.profile:
+        profiles = []
+        for p in args.profile:
+            for part in p.split(","):
+                part = part.strip()
+                if part:
+                    profiles.append(part)
+        # dedupe while preserving order
+        seen = set()
+        profiles = [x for x in profiles if not (x in seen or seen.add(x))]
+    else:
+        profiles = get_available_profiles()
+
+    return profiles
+
+
+def handle_dry_run(args, config: ScanConfig) -> List[Dict[str, Any]]:
+    """Handle dry run mode by loading sample data."""
+    sample_path = args.sample_file or config.output_paths["csv"]
+    if not os.path.exists(sample_path):
+        logger.error(f"Dry-run requested but sample file not found: {sample_path}")
+        sys.exit(1)
+
+    df = pd.read_csv(sample_path)
+    all_rows = df.to_dict(orient="records")
+    logger.info(f"Loaded {len(all_rows)} rows from {sample_path} for dry-run")
+    return all_rows
+
+
+def write_outputs(df: pd.DataFrame, profiles: List[str], config: ScanConfig) -> None:
+    """Write CSV, Excel and HTML outputs."""
+    # Write CSV and Excel
+    df.to_csv(config.output_paths["csv"], index=False)
+    df.to_excel(config.output_paths["xlsx"], index=False)
+    logger.info(f"Wrote CSV to {config.output_paths['csv']}")
+    logger.info(f"Wrote Excel to {config.output_paths['xlsx']}")
+
+    # Generate HTML report
+    try:
+        generate_html_report(df, profiles, config.output_paths["html"], config)
+    except Exception as e:
+        logger.warning(f"Failed to generate HTML report: {e}")
+
+
+def handle_failures(failures: Dict[str, str], config: ScanConfig) -> None:
+    """Handle and log scan failures."""
+    if failures:
+        logger.warning("Some profiles failed during scanning. Summary:")
+        for p, msg in failures.items():
+            logger.warning(f"  {p}: {msg}")
+        # Also write a small JSON with failures
+        try:
+            with open(config.output_paths["failures"], "w", encoding="utf-8") as fh:
+                json.dump(failures, fh, indent=2)
+            logger.info(f"Wrote failures summary to {config.output_paths['failures']}")
+        except Exception:
+            logger.exception("Failed to write failures JSON")
+
+
+def main() -> None:
+    """Main CLI entry point."""
+    parser = create_argument_parser()
+    args = parser.parse_args()
+
+    # Build configuration
+    config = build_config_from_args(args)
 
     try:
         config.validate()
@@ -227,33 +299,13 @@ def main() -> None:
     logger.info(f"Parallel profiles: {config.parallel_profiles}")
 
     # Determine profiles to scan
-    if args.profile:
-        profiles = []
-        for p in args.profile:
-            for part in p.split(","):
-                part = part.strip()
-                if part:
-                    profiles.append(part)
-        # dedupe while preserving order
-        seen = set()
-        profiles = [x for x in profiles if not (x in seen or seen.add(x))]
-    else:
-        profiles = get_available_profiles()
-
+    profiles = determine_profiles(args)
     logger.info(f"Found profiles: {profiles}")
 
-    all_rows: List[Dict[str, Any]] = []
-    failures: Dict[str, str] = {}
-
+    # Get data - either from dry run or actual scan
     if args.dry_run:
-        # Load sample data from CSV if provided
-        sample_path = args.sample_file or config.output_paths["csv"]
-        if not os.path.exists(sample_path):
-            logger.error(f"Dry-run requested but sample file not found: {sample_path}")
-            return
-        df = pd.read_csv(sample_path)
-        all_rows = df.to_dict(orient="records")
-        logger.info(f"Loaded {len(all_rows)} rows from {sample_path} for dry-run")
+        all_rows = handle_dry_run(args, config)
+        failures = {}
     else:
         all_rows, failures = scan_profiles_parallel(profiles, config)
 
@@ -285,34 +337,15 @@ def main() -> None:
     all_cols = base_cols + config.tags
     df = df[[c for c in all_cols if c in df.columns]]
 
-    # Write CSV and Excel
-    df.to_csv(config.output_paths["csv"], index=False)
-    df.to_excel(config.output_paths["xlsx"], index=False)
-    logger.info(f"Wrote CSV to {config.output_paths['csv']}")
-    logger.info(f"Wrote Excel to {config.output_paths['xlsx']}")
-
-    # Generate HTML report
-    try:
-        generate_html_report(df, profiles, config.output_paths["html"], config)
-    except Exception as e:
-        logger.warning(f"Failed to generate HTML report: {e}")
+    # Write outputs
+    write_outputs(df, profiles, config)
 
     # Save scan state for incremental scanning
     if not args.dry_run:
         save_new_scan_state(config, all_rows)
 
-    # Summarize failures
-    if failures:
-        logger.warning("Some profiles failed during scanning. Summary:")
-        for p, msg in failures.items():
-            logger.warning(f"  {p}: {msg}")
-        # Also write a small JSON with failures
-        try:
-            with open(config.output_paths["failures"], "w", encoding="utf-8") as fh:
-                json.dump(failures, fh, indent=2)
-            logger.info(f"Wrote failures summary to {config.output_paths['failures']}")
-        except Exception:
-            logger.exception("Failed to write failures JSON")
+    # Handle failures
+    handle_failures(failures, config)
 
     logger.info("Scan complete. See warnings/errors in the log file if present.")
 
