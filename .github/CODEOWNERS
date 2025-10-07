@@ -1,0 +1,18 @@
+# Global code owners
+* @LeoncioXavier
+
+# Documentation
+
+# Configuration and CI/CD
+.github/ @LeoncioXavier
+pyproject.toml @LeoncioXavier
+requirements.txt @LeoncioXavier
+Dockerfile @LeoncioXavier
+Makefile @LeoncioXavier
+
+# Core application code
+elasticache_scanner/ @LeoncioXavier
+
+# Security and policies
+SECURITY.md @LeoncioXavier
+LICENSE @LeoncioXavier

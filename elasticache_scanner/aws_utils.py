@@ -1,7 +1,7 @@
 """AWS client utilities and helpers."""
 
 import logging
-from typing import Any, Dict, List
+from typing import Any, Dict, List, cast
 
 import boto3
 from botocore.exceptions import ClientError
@@ -38,7 +38,7 @@ def get_available_profiles() -> List[str]:
     return profiles
 
 
-def list_tags_for_resource(client, resource_arn: str) -> Dict[str, str]:
+def list_tags_for_resource(client: Any, resource_arn: str) -> Dict[str, str]:
     """List tags for an ElastiCache resource."""
     try:
         resp = client.list_tags_for_resource(ResourceName=resource_arn)
@@ -62,7 +62,7 @@ def describe_cache_cluster(session: boto3.session.Session, region: str, cluster_
         resp = client.describe_cache_clusters(CacheClusterId=cluster_id, ShowCacheNodeInfo=True)
         clusters = resp.get("CacheClusters", [])
         if clusters:
-            return clusters[0]
+            return cast(Dict[str, Any], clusters[0])
     except Exception as e:
         if is_invalid_client_token(e):
             logger.warning(
@@ -81,7 +81,7 @@ def format_creation_time_from_cluster(cc: Dict[str, Any]) -> str:
         v = cc.get(k)
         if v:
             try:
-                return v.isoformat()
+                return str(v.isoformat())
             except Exception:
                 return str(v)
     return ""

@@ -6,10 +6,12 @@ from typing import List
 
 import pandas as pd
 
+from elasticache_scanner.config import ScanConfig
+
 logger = logging.getLogger(__name__)
 
 
-def generate_html_report(df: pd.DataFrame, profiles: List[str], html_path: str, config) -> None:
+def generate_html_report(df: pd.DataFrame, profiles: List[str], html_path: str, config: ScanConfig) -> None:
     """Generate interactive HTML report with DataTables, charts and filters."""
     # Use DataTables + Bootstrap for sorting and per-column filters
     # Remove unwanted columns from the table view
@@ -146,15 +148,24 @@ def _get_html_template() -> str:
             .table tbody tr:hover { background: #f7f8f9; }
             .btn-primary { background-color: var(--aws-accent); border-color: var(--aws-accent); color: #1b1b1b; }
             .btn-outline-secondary { border-color: rgba(15,23,42,0.08); color:#111827; background:transparent; }
-            .select2-container--default .select2-selection--multiple { min-height: 38px; border-radius:4px; }
+            .select2-container--default .select2-selection--multiple {
+                min-height: 38px; border-radius:4px;
+            }
             .small-muted { font-size:0.85rem; color:var(--aws-muted); }
             /* Responsive spacing tweaks */
-            @media (max-width: 768px){ .page-header { flex-direction:column; align-items:flex-start; gap:8px; } }
+            @media (max-width: 768px){
+                .page-header { flex-direction:column; align-items:flex-start; gap:8px; }
+            }
             /* Top nav bar (AWS console style) */
-            .top-nav { background: var(--aws-header); color: #fff; height:48px; display:flex; align-items:center; padding: 6px 18px; }
+            .top-nav {
+                background: var(--aws-header); color: #fff; height:48px;
+                display:flex; align-items:center; padding: 6px 18px;
+            }
             .top-nav .logo { display:flex; align-items:center; gap:12px; }
             .top-nav .logo svg { height:32px; }
-            .top-nav .region { margin-left:12px; color:rgba(255,255,255,0.85); font-size:0.9rem; }
+            .top-nav .region {
+                margin-left:12px; color:rgba(255,255,255,0.85); font-size:0.9rem;
+            }
         </style>
     </head>
     <body>
@@ -216,24 +227,38 @@ def _get_html_template() -> str:
                 <div class="row g-2 align-items-end">
                     <div class="col-md-2">
                         <label class="form-label">Region</label>
-                        <select id="filter-region" class="form-select" multiple><option value="">All</option></select>
+                        <select id="filter-region" class="form-select" multiple>
+                            <option value="">All</option>
+                        </select>
                     </div>
                     <div class="col-md-2">
                         <label class="form-label">Account</label>
-                        <select id="filter-account" class="form-select" multiple><option value="">All</option></select>
+                        <select id="filter-account" class="form-select" multiple>
+                            <option value="">All</option>
+                        </select>
                     </div>
                     <!-- Engine Version select removed; use Engine Groups for major-version filtering -->
                     <div class="col-md-2">
                         <label class="form-label">AtRest</label>
-                        <select id="filter-atrest" class="form-select"><option value="">All</option><option value="True">True</option><option value="False">False</option></select>
+                        <select id="filter-atrest" class="form-select">
+                            <option value="">All</option>
+                            <option value="True">True</option>
+                            <option value="False">False</option>
+                        </select>
                     </div>
                     <div class="col-md-2">
                         <label class="form-label">InTransit</label>
-                        <select id="filter-transit" class="form-select"><option value="">All</option><option value="True">True</option><option value="False">False</option></select>
+                        <select id="filter-transit" class="form-select">
+                            <option value="">All</option>
+                            <option value="True">True</option>
+                            <option value="False">False</option>
+                        </select>
                     </div>
                     <div class="col-md-2">
                         <label class="form-label">Resource Type</label>
-                        <select id="filter-resource-type" class="form-select" multiple><option value="">All</option></select>
+                        <select id="filter-resource-type" class="form-select" multiple>
+                            <option value="">All</option>
+                        </select>
                     </div>
                     <div class="col-md-3">
                         <label class="form-label">Team</label>
@@ -241,11 +266,14 @@ def _get_html_template() -> str:
                     </div>
                     <div class="col-md-3">
                         <label class="form-label">Resource Id</label>
-                        <input id="filter-resource-id" class="form-control" placeholder="partial match (e.g., my-cache-)" />
+                        <input id="filter-resource-id" class="form-control"
+                               placeholder="partial match (e.g., my-cache-)" />
                     </div>
                     <div class="col-md-2">
                         <label class="form-label">Engine Groups</label>
-                        <select id="filter-engine-groups" class="form-select"><option value="">All</option></select>
+                        <select id="filter-engine-groups" class="form-select">
+                            <option value="">All</option>
+                        </select>
                     </div>
                     <div class="col-md-1 text-end">
                         <button id="clear-filters" class="btn btn-sm btn-secondary">Clear</button>
@@ -255,19 +283,32 @@ def _get_html_template() -> str:
             <!-- Columns toggle (show/hide) -->
             <div class="mb-3">
                 <div class="btn-group">
-                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">Columns</button>
-                    <ul class="dropdown-menu p-3" id="columns-dropdown" style="max-height:300px; overflow:auto;">
+                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle"
+                            data-bs-toggle="dropdown" aria-expanded="false">Columns</button>
+                    <ul class="dropdown-menu p-3" id="columns-dropdown"
+                        style="max-height:300px; overflow:auto;">
                         <!-- populated by JS -->
-                        <li class="mb-2"><button class="btn btn-sm btn-link" id="show-all-cols">Show all</button> <button class="btn btn-sm btn-link" id="hide-all-cols">Hide all</button></li>
+                        <li class="mb-2">
+                            <button class="btn btn-sm btn-link" id="show-all-cols">Show all</button>
+                            <button class="btn btn-sm btn-link" id="hide-all-cols">Hide all</button>
+                        </li>
                     </ul>
                 </div>
-                <button class="btn btn-sm btn-primary ms-2" id="export-filtered-csv">Export filtered CSV</button>
+                <button class="btn btn-sm btn-primary ms-2" id="export-filtered-csv">
+                    Export filtered CSV
+                </button>
             </div>
 
             <!-- Tabs -->
             <ul class="nav nav-tabs mb-3" id="reportTabs" role="tablist">
-                <li class="nav-item" role="presentation"><button class="nav-link active" id="list-tab" data-bs-toggle="tab" data-bs-target="#list" type="button" role="tab">List</button></li>
-                <li class="nav-item" role="presentation"><button class="nav-link" id="charts-tab" data-bs-toggle="tab" data-bs-target="#charts" type="button" role="tab">Charts</button></li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="list-tab" data-bs-toggle="tab"
+                            data-bs-target="#list" type="button" role="tab">List</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="charts-tab" data-bs-toggle="tab"
+                            data-bs-target="#charts" type="button" role="tab">Charts</button>
+                </li>
             </ul>
 
             <div class="tab-content">
@@ -277,16 +318,28 @@ def _get_html_template() -> str:
                 <div class="tab-pane fade" id="charts" role="tabpanel">
                     <div class="row g-3">
                         <div class="col-12 col-lg-6">
-                            <div class="card p-3 mb-3"><h6>Engine versions</h6><canvas id="engineChart" width="400" height="200"></canvas></div>
+                            <div class="card p-3 mb-3">
+                                <h6>Engine versions</h6>
+                                <canvas id="engineChart" width="400" height="200"></canvas>
+                            </div>
                         </div>
                         <div class="col-12 col-lg-6">
-                            <div class="card p-3 mb-3"><h6>Encryption (At-rest / In-transit)</h6><canvas id="encChart" width="400" height="200"></canvas></div>
+                            <div class="card p-3 mb-3">
+                                <h6>Encryption (At-rest / In-transit)</h6>
+                                <canvas id="encChart" width="400" height="200"></canvas>
+                            </div>
                         </div>
                         <div class="col-12 col-lg-6">
-                            <div class="card p-3 mb-3"><h6>Regions</h6><canvas id="regionChart" width="400" height="200"></canvas></div>
+                            <div class="card p-3 mb-3">
+                                <h6>Regions</h6>
+                                <canvas id="regionChart" width="400" height="200"></canvas>
+                            </div>
                         </div>
                         <div class="col-12 col-lg-6">
-                            <div class="card p-3 mb-3"><h6>Team</h6><canvas id="teamChart" width="400" height="200"></canvas></div>
+                            <div class="card p-3 mb-3">
+                                <h6>Team</h6>
+                                <canvas id="teamChart" width="400" height="200"></canvas>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -314,7 +367,9 @@ def _get_html_template() -> str:
 
                 // Populate filter selects from table data (use toArray for compatibility)
                 var headerMap = {};
-                $('#elasticache thead tr').first().find('th').each(function(i){ headerMap[$(this).text().trim()] = i; });
+                $('#elasticache thead tr').first().find('th').each(function(i){
+                    headerMap[$(this).text().trim()] = i;
+                });
                 var regionIdx = headerMap['Region'];
                 var accountIdx = headerMap['AccountId'];
                 var engIdx = headerMap['EngineVersion'];
@@ -328,30 +383,78 @@ def _get_html_template() -> str:
                     // Prefer precomputed lists injected in __CHART_DATA__
                     try{
                         var cd = __CHART_DATA__;
-                        if(cd.region_list && cd.region_list.length){ cd.region_list.forEach(function(v){ $('#filter-region').append($('<option>').val(v).text(v)); }); }
-                        if(cd.account_list && cd.account_list.length){ cd.account_list.forEach(function(v){ $('#filter-account').append($('<option>').val(v).text(v)); }); }
+                        if(cd.region_list && cd.region_list.length){
+                            cd.region_list.forEach(function(v){
+                                $('#filter-region').append($('<option>').val(v).text(v));
+                            });
+                        }
+                        if(cd.account_list && cd.account_list.length){
+                            cd.account_list.forEach(function(v){
+                                $('#filter-account').append($('<option>').val(v).text(v));
+                            });
+                        }
                         // engine_list still available in injected data but Engine Version select removed
-                        if(cd.team_list && cd.team_list.length){ cd.team_list.forEach(function(v){ $('#filter-team').append($('<option>').val(v).text(v)); }); }
-                        if(cd.engine_groups && cd.engine_groups.length){ cd.engine_groups.forEach(function(v){ $('#filter-engine-groups').append($('<option>').val(v).text(v)); }); }
-                        if(cd.resource_type_list && cd.resource_type_list.length){ cd.resource_type_list.forEach(function(v){ $('#filter-resource-type').append($('<option>').val(v).text(v)); }); }
+                        if(cd.team_list && cd.team_list.length){
+                            cd.team_list.forEach(function(v){
+                                $('#filter-team').append($('<option>').val(v).text(v));
+                            });
+                        }
+                        if(cd.engine_groups && cd.engine_groups.length){
+                            cd.engine_groups.forEach(function(v){
+                                $('#filter-engine-groups').append($('<option>').val(v).text(v));
+                            });
+                        }
+                        if(cd.resource_type_list && cd.resource_type_list.length){
+                            cd.resource_type_list.forEach(function(v){
+                                $('#filter-resource-type').append($('<option>').val(v).text(v));
+                            });
+                        }
                         return;
                     } catch(e){ /* fallback to table-derived lists below */ }
 
                     // guard empty mappings
                     if(regionIdx === undefined || engIdx === undefined || teamIdx === undefined) return;
                     var regionVals = table.column(regionIdx).data().unique().toArray().sort();
-                    regionVals.forEach(function(v){ if(v!==null && v!==undefined && v!=='') { $('#filter-region').append($('<option>').val(v).text(v)); } });
+                    regionVals.forEach(function(v){
+                        if(v!==null && v!==undefined && v!=='') {
+                            $('#filter-region').append($('<option>').val(v).text(v));
+                        }
+                    });
                     var engVals = table.column(engIdx).data().unique().toArray().sort();
-                    engVals.forEach(function(v){ if(v!==null && v!==undefined && v!=='') { $('#filter-engine').append($('<option>').val(v).text(v)); } });
+                    engVals.forEach(function(v){
+                        if(v!==null && v!==undefined && v!=='') {
+                            $('#filter-engine').append($('<option>').val(v).text(v));
+                        }
+                    });
                     var teamVals = table.column(teamIdx).data().unique().toArray().sort();
-                    teamVals.forEach(function(v){ if(v!==null && v!==undefined && v!=='') { $('#filter-team').append($('<option>').val(v).text(v)); } });
-                    if(resTypeIdx !== undefined){ var rtVals = table.column(resTypeIdx).data().unique().toArray().sort(); rtVals.forEach(function(v){ if(v!==null && v!==undefined && v!=='') { $('#filter-resource-type').append($('<option>').val(v).text(v)); } }); }
-                    if(accountIdx !== undefined){ var acctVals = table.column(accountIdx).data().unique().toArray().sort(); acctVals.forEach(function(v){ if(v!==null && v!==undefined && v!=='') { $('#filter-account').append($('<option>').val(v).text(v)); } }); }
+                    teamVals.forEach(function(v){
+                        if(v!==null && v!==undefined && v!=='') {
+                            $('#filter-team').append($('<option>').val(v).text(v));
+                        }
+                    });
+                    if(resTypeIdx !== undefined){
+                        var rtVals = table.column(resTypeIdx).data().unique().toArray().sort();
+                        rtVals.forEach(function(v){
+                            if(v!==null && v!==undefined && v!=='') {
+                                $('#filter-resource-type').append($('<option>').val(v).text(v));
+                            }
+                        });
+                    }
+                    if(accountIdx !== undefined){
+                        var acctVals = table.column(accountIdx).data().unique().toArray().sort();
+                        acctVals.forEach(function(v){
+                            if(v!==null && v!==undefined && v!=='') {
+                                $('#filter-account').append($('<option>').val(v).text(v));
+                            }
+                        });
+                    }
                 }
                 populateFilters();
 
                 // Initialize Select2 on our multi-selects for a nicer UX
-                $('#filter-region,#filter-team,#filter-resource-type,#filter-account').select2({width:'100%', placeholder: 'All', allowClear:true});
+                $('#filter-region,#filter-team,#filter-resource-type,#filter-account').select2({
+                    width:'100%', placeholder: 'All', allowClear:true
+                });
                 // Engine groups is a single-select helper (not Select2)
                 // If you want multi for groups you could change it similarly
 
@@ -376,7 +479,8 @@ def _get_html_template() -> str:
 
                     // Debug info for engine-group filtering
                     try{
-                        console.debug('applyFilters: region=', r, 'engine_group=', eg, 'engine_regex=', e, 'atrest=', ar, 'transit=', tr, 'team=', t);
+                        console.debug('applyFilters: region=', r, 'engine_group=', eg,
+                                     'engine_regex=', e, 'atrest=', ar, 'transit=', tr, 'team=', t);
                     } catch(ex){}
                     var ar = $('#filter-atrest').val() || '';
                     var tr = $('#filter-transit').val() || '';
@@ -412,7 +516,10 @@ def _get_html_template() -> str:
                                 var esc = rid.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&');
                                 var regex = esc; // we'll do substring match
                                 table.column(resIdIdx).search(regex, true, false, true);
-                            } catch(err){ console.warn('Invalid resource id regex', rid, err); table.column(resIdIdx).search('', false, false); }
+                            } catch(err){
+                                console.warn('Invalid resource id regex', rid, err);
+                                table.column(resIdIdx).search('', false, false);
+                            }
                         } else {
                             table.column(resIdIdx).search('', false, false);
                         }
@@ -422,10 +529,12 @@ def _get_html_template() -> str:
                 }
 
                 // Wire change events, include engine groups so selecting a group applies filters
-                $('#filter-region, #filter-engine-groups, #filter-atrest, #filter-transit, #filter-team, #filter-resource-type, #filter-account').on('change', applyFilters);
+                $('#filter-region, #filter-engine-groups, #filter-atrest, #filter-transit, ' +
+                 '#filter-team, #filter-resource-type, #filter-account').on('change', applyFilters);
                 $('#filter-resource-id').on('input', function(){ applyFilters(); });
                 $('#clear-filters').on('click', function(){
-                    $('#filter-region,#filter-engine-groups,#filter-atrest,#filter-transit,#filter-team,#filter-resource-type,#filter-account').val(null).trigger('change');
+                    $('#filter-region,#filter-engine-groups,#filter-atrest,#filter-transit,' +
+                     '#filter-team,#filter-resource-type,#filter-account').val(null).trigger('change');
                     $('#filter-resource-id').val('');
                     applyFilters();
                 });
@@ -439,17 +548,74 @@ def _get_html_template() -> str:
                     const teamCtx = document.getElementById('teamChart').getContext('2d');
                     // nodeFamilyChart removed
 
-                    var engineChart = new Chart(engineCtx, {type:'bar', data:{labels:[], datasets:[{label:'Instances', data:[], backgroundColor:'rgba(54,162,235,0.6)'}]}, options:{responsive:true, plugins:{legend:{display:false}}}});
-                    var encChart = new Chart(encCtx, {type:'bar', data:{labels:['AtRest','InTransit'], datasets:[{label:'True', data:[0,0], backgroundColor:'rgba(75,192,192,0.6)'},{label:'False', data:[0,0], backgroundColor:'rgba(255,99,132,0.6)'}]}, options:{responsive:true}});
-                    var regionChart = new Chart(regionCtx, {type:'pie', data:{labels:[], datasets:[{data:[], backgroundColor:[]}],}, options:{responsive:true}});
-                    var teamChart = new Chart(teamCtx, {type:'bar', data:{labels:[], datasets:[{label:'Instances', data:[], backgroundColor:'rgba(153,102,255,0.6)'}]}, options:{indexAxis:'y', responsive:true}});
+                    var engineChart = new Chart(engineCtx, {
+                        type:'bar',
+                        data:{
+                            labels:[],
+                            datasets:[{
+                                label:'Instances',
+                                data:[],
+                                backgroundColor:'rgba(54,162,235,0.6)'
+                            }]
+                        },
+                        options:{
+                            responsive:true,
+                            plugins:{legend:{display:false}}
+                        }
+                    });
+                    var encChart = new Chart(encCtx, {
+                        type:'bar',
+                        data:{
+                            labels:['AtRest','InTransit'],
+                            datasets:[
+                                {
+                                    label:'True',
+                                    data:[0,0],
+                                    backgroundColor:'rgba(75,192,192,0.6)'
+                                },
+                                {
+                                    label:'False',
+                                    data:[0,0],
+                                    backgroundColor:'rgba(255,99,132,0.6)'
+                                }
+                            ]
+                        },
+                        options:{responsive:true}
+                    });
+                    var regionChart = new Chart(regionCtx, {
+                        type:'pie',
+                        data:{
+                            labels:[],
+                            datasets:[{data:[], backgroundColor:[]}]
+                        },
+                        options:{responsive:true}
+                    });
+                    var teamChart = new Chart(teamCtx, {
+                        type:'bar',
+                        data:{
+                            labels:[],
+                            datasets:[{
+                                label:'Instances',
+                                data:[],
+                                backgroundColor:'rgba(153,102,255,0.6)'
+                            }]
+                        },
+                        options:{
+                            indexAxis:'y',
+                            responsive:true
+                        }
+                    });
                     // nodeFamilyChart removed
 
                     function updateChartsFromFiltered(){
                         var visibleData = [];
-                        table.rows({filter:'applied'}).every(function(){ visibleData.push(this.data()); });
+                        table.rows({filter:'applied'}).every(function(){
+                            visibleData.push(this.data());
+                        });
                         var cols = [];
-                        $('#elasticache thead tr').first().find('th').each(function(i){ cols.push($(this).text().trim()); });
+                        $('#elasticache thead tr').first().find('th').each(function(i){
+                            cols.push($(this).text().trim());
+                        });
                         var idxOf = (name)=>cols.indexOf(name);
                         var ev = idxOf('EngineVersion');
                         var r = idxOf('Region');
@@ -464,12 +630,16 @@ def _get_html_template() -> str:
                         var atRestTrue=0, atRestFalse=0, transitTrue=0, transitFalse=0;
 
                         visibleData.forEach(function(row){
-                            var engine = ev>=0 ? String(row[ev]) : 'unknown'; engineMap[engine] = (engineMap[engine]||0)+1;
-                            var region = r>=0 ? String(row[r]) : 'unknown'; regionMap[region] = (regionMap[region]||0)+1;
+                            var engine = ev>=0 ? String(row[ev]) : 'unknown';
+                            engineMap[engine] = (engineMap[engine]||0)+1;
+                            var region = r>=0 ? String(row[r]) : 'unknown';
+                            regionMap[region] = (regionMap[region]||0)+1;
                             var team = tm>=0 ? String(row[tm]) : 'not found'; teamMap[team] = (teamMap[team]||0)+1;
                             // NodeTypes handled elsewhere; node family chart removed
-                            var a = ar>=0 ? String(row[ar]) : 'False'; if(a==='True' || a==='true' || a==='1') atRestTrue++; else atRestFalse++;
-                            var t = trn>=0 ? String(row[trn]) : 'False'; if(t==='True' || t==='true' || t==='1') transitTrue++; else transitFalse++;
+                            var a = ar>=0 ? String(row[ar]) : 'False';
+                            if(a==='True' || a==='true' || a==='1') atRestTrue++; else atRestFalse++;
+                            var t = trn>=0 ? String(row[trn]) : 'False';
+                            if(t==='True' || t==='true' || t==='1') transitTrue++; else transitFalse++;
                         });
 
                         var engineLabels = Object.keys(engineMap).sort();
@@ -484,7 +654,9 @@ def _get_html_template() -> str:
                         var regionLabels = Object.keys(regionMap).sort();
                         regionChart.data.labels = regionLabels;
                         regionChart.data.datasets[0].data = regionLabels.map(l=>regionMap[l]);
-                        regionChart.data.datasets[0].backgroundColor = regionLabels.map((_,i)=>`hsl(${(i*40)%360} 70% 50%)`);
+                        regionChart.data.datasets[0].backgroundColor = regionLabels.map(
+                            (_,i)=>`hsl(${(i*40)%360} 70% 50%)`
+                        );
                         regionChart.update();
 
                         var teamEntries = Object.entries(teamMap).sort((a,b)=>b[1]-a[1]).slice(0,10);
@@ -498,7 +670,11 @@ def _get_html_template() -> str:
 
                     // Update when switching to charts tab
                     var chartsTab = document.getElementById('charts-tab');
-                    if(chartsTab){ chartsTab.addEventListener('shown.bs.tab', function(){ updateChartsFromFiltered(); }); }
+                    if(chartsTab){
+                        chartsTab.addEventListener('shown.bs.tab', function(){
+                            updateChartsFromFiltered();
+                        });
+                    }
 
                     // initialize charts from full dataset
                     updateChartsFromFiltered();
@@ -514,7 +690,11 @@ def _get_html_template() -> str:
                     cols.forEach(function(c){
                         var id = 'colchk_' + c.idx;
                         var li = $('<li class="mb-1"></li>');
-                        var html = `<div class="form-check"><input class="form-check-input col-toggle" type="checkbox" value="${c.idx}" id="${id}" checked> <label class="form-check-label" for="${id}">${c.name}</label></div>`;
+                        var html = `<div class="form-check">
+                            <input class="form-check-input col-toggle" type="checkbox"
+                                   value="${c.idx}" id="${id}" checked>
+                            <label class="form-check-label" for="${id}">${c.name}</label>
+                        </div>`;
                         li.html(html);
                         dropdown.append(li);
                     });
@@ -526,15 +706,25 @@ def _get_html_template() -> str:
                         table.column(idx).visible(vis);
                     });
 
-                    $('#show-all-cols').on('click', function(e){ e.preventDefault(); $('.col-toggle').prop('checked', true).trigger('change'); });
-                    $('#hide-all-cols').on('click', function(e){ e.preventDefault(); $('.col-toggle').prop('checked', false).trigger('change'); });
+                    $('#show-all-cols').on('click', function(e){
+                        e.preventDefault();
+                        $('.col-toggle').prop('checked', true).trigger('change');
+                    });
+                    $('#hide-all-cols').on('click', function(e){
+                        e.preventDefault();
+                        $('.col-toggle').prop('checked', false).trigger('change');
+                    });
                 })();
 
                 // Export filtered rows as CSV (only visible columns)
                 $('#export-filtered-csv').on('click', function(){
                     try{
                         var visibleCols = [];
-                        $('#elasticache thead th').each(function(i){ if(table.column(i).visible()){ visibleCols.push({idx:i, name:$(this).text().trim()}); } });
+                        $('#elasticache thead th').each(function(i){
+                            if(table.column(i).visible()){
+                                visibleCols.push({idx:i, name:$(this).text().trim()});
+                            }
+                        });
                         if(visibleCols.length===0){ alert('No visible columns to export'); return; }
 
                         var rows = [];
@@ -542,7 +732,9 @@ def _get_html_template() -> str:
                         table.rows({filter:'applied'}).every(function(){ rows.push(this.data()); });
 
                         // Build CSV header
-                        var header = visibleCols.map(function(c){ return '"' + c.name.replace(/"/g,'""') + '"'; }).join(',');
+                        var header = visibleCols.map(function(c){
+                            return '"' + c.name.replace(/"/g,'""') + '"';
+                        }).join(',');
                         var csvLines = [header];
 
                         rows.forEach(function(r){

@@ -43,7 +43,7 @@ jobs:
 
     - name: Type check with mypy
       run: |
-        mypy elasticache_scanner/ --ignore-missing-imports
+        mypy elasticache_scanner/
 
     - name: Check formatting with black
       run: |
