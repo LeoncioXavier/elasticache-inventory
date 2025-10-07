@@ -112,4 +112,4 @@ def calculate_resource_hash(resource_data: Dict[str, Any]) -> str:
     ]
 
     content = "|".join(key_fields)
-    return hashlib.md5(content.encode()).hexdigest()  # nosec B324
+    return hashlib.md5(content.encode()).hexdigest()  # nosec B303, B324
