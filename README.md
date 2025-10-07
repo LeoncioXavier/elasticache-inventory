@@ -1,4 +1,4 @@
-# ElastiCache Inventor
+# ElastiCache Inventory
 
 **📄 [Versão em Português](README-pt.md)** | **📄 English Version**
 
@@ -15,13 +15,12 @@ Table of contents
 - [HTML report details](#html-report-details)
 - [Credential handling](#credential-handling)
 - [Testing & development](#testing--development)
-- [Migration from v0.x](#migration-from-v0x)
 - [Changelog](#changelog)
 - [Contributing](#contributing)
 
 ## Overview
 
-This tool scans AWS accounts (profiles) and collects metadata about ElastiCache Redis resources (replication groups and cache clusters) across configurable regions. Designed for inventory management, security reviews, and compliance reporting.
+This tool scans AWS accounts (profiles) and collects metadata about ElastiCache resources (replication groups and cache clusters) across configurable regions. Designed for inventory management, security reviews, and compliance reporting.
 
 **Key improvements in v1.0:**
 - **Configurable regions** (no longer hard-coded)
@@ -201,33 +200,6 @@ make dry-run      # Test UI changes without AWS calls
 
 ### Available make targets
 Run `make help` to see all available targets including examples for different scanning modes.
-
-## Migration from v0.x
-
-If you're migrating from the original `scan_elasticache.py`:
-
-### Command changes
-**Old:**
-```bash
-python scan_elasticache.py
-```
-
-**New:**
-```bash
-python3 -m elasticache_scanner --regions us-east-1 sa-east-1
-```
-
-### Key differences
-1. **Regions now required**: Must specify `--regions` (no longer hard-coded to us-east-1, sa-east-1)
-2. **Tags configurable**: Use `--tags Team Environment` instead of hard-coded CC, Email, Team
-3. **Module structure**: Run as `python3 -m elasticache_scanner` instead of direct script
-4. **New features**: `--incremental`, `--parallel-profiles`, better error handling
-
-### Configuration migration
-- Update scripts/automation to include `--regions` parameter
-- Consider using `--tags` to specify your organization's tag schema
-- Take advantage of `--parallel-profiles` for faster scanning
-- Use `--incremental` for regular monitoring with change detection
 
 ## Changelog
 

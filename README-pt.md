@@ -2,7 +2,7 @@
 
 **📄 [English Version](README.md)** | **📄 Versão em Português**
 
-Uma ferramenta Python modular para inventariar recursos ElastiCache Redis através de perfis e regiões AWS com varredura paralela, atualizações incrementais e relatórios abrangentes.
+Uma ferramenta Python modular para inventariar recursos ElastiCache através de perfis e regiões AWS com varredura paralela, atualizações incrementais e relatórios abrangentes.
 
 Índice
 - [Visão Geral](#visão-geral)
@@ -15,13 +15,12 @@ Uma ferramenta Python modular para inventariar recursos ElastiCache Redis atrav�
 - [Detalhes do relatório HTML](#detalhes-do-relatório-html)
 - [Tratamento de credenciais](#tratamento-de-credenciais)
 - [Testes e desenvolvimento](#testes-e-desenvolvimento)
-- [Migração da v0.x](#migração-da-v0x)
 - [Changelog](#changelog)
 - [Contribuindo](#contribuindo)
 
 ## Visão Geral
 
-Esta ferramenta faz varredura de contas AWS (perfis) e coleta metadados sobre recursos ElastiCache Redis (grupos de replicação e clusters de cache) através de regiões configuráveis. Projetada para gerenciamento de inventário, revisões de segurança e relatórios de conformidade.
+Esta ferramenta faz varredura de contas AWS (perfis) e coleta metadados sobre recursos ElastiCache (grupos de replicação e clusters de cache) através de regiões configuráveis. Projetada para gerenciamento de inventário, revisões de segurança e relatórios de conformidade.
 
 **Principais melhorias na v1.0:**
 - **Regiões configuráveis** (não mais hard-coded)
@@ -201,33 +200,6 @@ make dry-run      # Testar mudanças de UI sem chamadas AWS
 
 ### Targets make disponíveis
 Execute `make help` para ver todos os targets disponíveis incluindo exemplos para diferentes modos de varredura.
-
-## Migração da v0.x
-
-Se você está migrando do `scan_elasticache.py` original:
-
-### Mudanças de comando
-**Antigo:**
-```bash
-python scan_elasticache.py
-```
-
-**Novo:**
-```bash
-python3 -m elasticache_scanner --regions us-east-1 sa-east-1
-```
-
-### Principais diferenças
-1. **Regiões agora obrigatórias**: Deve especificar `--regions` (não mais hard-coded para us-east-1, sa-east-1)
-2. **Tags configuráveis**: Use `--tags Team Environment` ao invés de CC, Email, Team hard-coded
-3. **Estrutura modular**: Execute como `python3 -m elasticache_scanner` ao invés de script direto
-4. **Novas funcionalidades**: `--incremental`, `--parallel-profiles`, melhor tratamento de erros
-
-### Migração de configuração
-- Atualize scripts/automação para incluir parâmetro `--regions`
-- Considere usar `--tags` para especificar o esquema de tags da sua organização
-- Aproveite `--parallel-profiles` para varredura mais rápida
-- Use `--incremental` para monitoramento regular com detecção de mudanças
 
 ## Changelog
 
